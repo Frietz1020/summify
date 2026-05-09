@@ -24,7 +24,7 @@ export async function callOpenRouter(messages, responseFormat = 'text') {
   const body = {
     model: MODEL,
     messages: resolvedMessages,
-    max_tokens: 2048,
+    max_tokens: 4096,
     temperature: 0.3,
   };
 

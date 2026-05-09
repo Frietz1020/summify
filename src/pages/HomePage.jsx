@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import MobileShell, { ArrowRightIcon } from "../components/layout/MobileShell";
+import { useAuthContext } from "../context/AuthContext";
 
 const cards = [
   { label: "Go summarize contexts", route: "/app/original" },
@@ -9,11 +10,13 @@ const cards = [
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const { currentUser } = useAuthContext();
+  const displayName = currentUser?.displayName || currentUser?.email?.split("@")[0] || "there";
 
   return (
     <MobileShell>
       <div className="home-page">
-        <p className="home-page__eyebrow">Hi, Username!</p>
+        <p className="home-page__eyebrow">Hi, {displayName}!</p>
         <h1 className="home-page__title">Where should we start?</h1>
         <div className="home-card-stack">
           {cards.map((card) => (

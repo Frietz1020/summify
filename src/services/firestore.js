@@ -8,34 +8,48 @@ import {
   orderBy,
   serverTimestamp,
 } from "firebase/firestore";
-import { db } from "./firebase";
+import { db, auth } from "./firebase";
 
+/**
+ * Ensures a valid Firebase Auth token exists before any Firestore call.
+ * Prevents PERMISSION_DENIED when the auth state hasn't fully resolved yet.
+ */
+async function ensureAuth() {
+  const user = auth.currentUser;
+  if (!user) throw new Error("Not authenticated");
+  await user.getIdToken(/* forceRefresh= */ false);
+  return user;
+}
+
+/**
+ * Returns the Firestore collection ref for a user's history.
+ * Path: users/{uid}/history
+ */
 function historyRef(uid) {
   return collection(db, "users", uid, "history");
 }
 
 /**
- * @param {string} uid
- * @param {{ fileName: string, extractedText: string, summaryVariants: object, keyTerms: object }} record
- * @returns {Promise<string>} the new document ID
+ * Save a completed summary to Firestore.
  */
 export async function saveHistory(uid, { fileName, extractedText, summaryVariants, keyTerms }) {
+  await ensureAuth();
   const docRef = await addDoc(historyRef(uid), {
-    fileName:       fileName || "Pasted text",
+    fileName:        fileName || "Pasted text",
     extractedText,
     summaryVariants,
     keyTerms,
-    createdAt:      serverTimestamp(),
+    createdAt:       serverTimestamp(),
   });
   return docRef.id;
 }
 
 /**
- * @param {string} uid
- * @returns {Promise<Array>}
+ * Fetch all history records for a user, newest first.
  */
 export async function getHistory(uid) {
-  const q   = query(historyRef(uid), orderBy("createdAt", "desc"));
+  await ensureAuth();
+  const q    = query(historyRef(uid), orderBy("createdAt", "desc"));
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({
     id: d.id,
@@ -45,9 +59,9 @@ export async function getHistory(uid) {
 }
 
 /**
- * @param {string} uid
- * @param {string} docId
+ * Delete a single history record.
  */
 export async function deleteHistory(uid, docId) {
+  await ensureAuth();
   await deleteDoc(doc(db, "users", uid, "history", docId));
 }

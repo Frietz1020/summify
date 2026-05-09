@@ -11,6 +11,7 @@ import SummarizedPage from "./pages/SummarizedPage";
 import GraphPage     from "./pages/GraphPage";
 import HistoryPage   from "./pages/HistoryPage";
 import ProfilePage   from "./pages/ProfilePage";
+import SettingsPage  from "./pages/SettingsPage";
 
 /**
  * ProtectedRoute
@@ -53,7 +54,7 @@ export default function App() {
               <Route path="/app/graph"      element={<ProtectedRoute><GraphPage /></ProtectedRoute>} />
               <Route path="/app/history"    element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
               <Route path="/app/profile"    element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-              <Route path="/app/settings"   element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+              <Route path="/app/settings"   element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
 
               {/* Default */}
               <Route path="/app" element={<Navigate to="/app/home" replace />} />

@@ -68,6 +68,8 @@ export default function OriginalPage() {
 
   function clearUploadedFile() {
     setUploadedFile(null);
+    setExtractedText("");
+    setPastedText("");
   }
 
   async function handleSummarize() {
