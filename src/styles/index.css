@@ -1,0 +1,157 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   OpenDyslexic — loaded from CDN (no npm package needed)
+   ============================================================ */
+@font-face {
+  font-family: "OpenDyslexic";
+  src: url("https://cdn.jsdelivr.net/npm/opendyslexic@0.91.12/fonts/OpenDyslexic-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "OpenDyslexic";
+  src: url("https://cdn.jsdelivr.net/npm/opendyslexic@0.91.12/fonts/OpenDyslexic-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================================
+   CSS Design Tokens — Light mode (default)
+   ============================================================ */
+:root {
+  /* Surfaces */
+  --bg-page:        #F7F8FC;
+  --bg-card:        #FFFFFF;
+  --bg-input:       #F7F8FC;
+  --bg-nav:         #8D7C66;
+
+  /* Text */
+  --text-primary:   #06070D;
+  --text-muted:     #B8C5B1;
+  --text-on-nav:    #FFFFFF;
+  --text-on-primary:#FFFFFF;
+
+  /* Brand */
+  --color-primary:  #8D7C66;
+  --color-accent:   #8BA88C;
+  --color-secondary:#B8C5B1;
+
+  /* Borders / separators */
+  --border-default: #E0E0E0;
+  --border-input:   #8BA88C;
+
+  /* Shadows */
+  --shadow-card:    4px 4px 2px rgba(0, 0, 0, 0.25);
+
+  /* Font */
+  --font-body:      'Poppins', sans-serif;
+
+  /* Misc */
+  --overlay-bg:     rgba(0, 0, 0, 0.40);
+}
+
+/* ============================================================
+   Dark mode overrides — toggled via class on <html>
+   ============================================================ */
+html.dark {
+  --bg-page:        #1A1A1F;
+  --bg-card:        #25252C;
+  --bg-input:       #2E2E38;
+  --bg-nav:         #2C2820;
+
+  --text-primary:   #EDEEF2;
+  --text-muted:     #7A8A78;
+  --text-on-nav:    #EDEEF2;
+  --text-on-primary:#EDEEF2;
+
+  --color-primary:  #A89880;
+  --color-accent:   #6F8F70;
+  --color-secondary:#4A5A49;
+
+  --border-default: #3A3A44;
+  --border-input:   #6F8F70;
+
+  --shadow-card:    4px 4px 2px rgba(0, 0, 0, 0.55);
+
+  --overlay-bg:     rgba(0, 0, 0, 0.65);
+}
+
+/* ============================================================
+   Dyslexic font override — toggled via class on <html>
+   ============================================================ */
+html.dyslexic,
+html.dyslexic * {
+  font-family: "OpenDyslexic", sans-serif !important;
+  letter-spacing: 0.05em;
+  word-spacing:   0.12em;
+  line-height:    1.7;
+}
+
+/* ============================================================
+   Global theme application
+   ============================================================ */
+html {
+  background-color: var(--bg-page);
+  color:            var(--text-primary);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+body,
+#root {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-page);
+  color:            var(--text-primary);
+  font-family:      var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* ============================================================
+   Component-level theme hooks
+   All components that need dark/dyslexic awareness use these.
+   ============================================================ */
+
+/* Page backgrounds */
+.theme-bg-page  { background-color: var(--bg-page)  !important; }
+.theme-bg-card  { background-color: var(--bg-card)  !important; }
+.theme-bg-input { background-color: var(--bg-input) !important; }
+.theme-bg-nav   { background-color: var(--bg-nav)   !important; }
+
+/* Text */
+.theme-text-primary { color: var(--text-primary)   !important; }
+.theme-text-muted   { color: var(--text-muted)     !important; }
+.theme-text-on-nav  { color: var(--text-on-nav)    !important; }
+
+/* Borders */
+.theme-border         { border-color: var(--border-default) !important; }
+.theme-border-input   { border-color: var(--border-input)   !important; }
+
+/* Brand colours */
+.theme-primary  { color: var(--color-primary) !important; }
+.theme-accent   { color: var(--color-accent)  !important; }
+
+/* ============================================================
+   Animations
+   ============================================================ */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* ============================================================
+   Resets
+   ============================================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
