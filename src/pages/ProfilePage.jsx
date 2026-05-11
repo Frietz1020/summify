@@ -34,7 +34,7 @@ export default function ProfilePage() {
         <section className="profile-hero" aria-label="Account summary">
           <div className="profile-avatar">
             {photoURL ? (
-              <img src={photoURL} alt={displayName} className="profile-avatar-img" />
+              <img src={photoURL} alt={displayName} className="profile-avatar-img" referrerPolicy="no-referrer" />
             ) : (
               <ProfileIcon />
             )}

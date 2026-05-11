@@ -1,20 +1,38 @@
 import { useCallback, useState } from "react";
 import { callOpenRouter } from "../services/openrouter";
+import { useDocument } from "../context/DocumentContext";
 
 const EMPTY_VARIANTS = { concise: "", detailed: "", bullet: "" };
 
+/**
+ * useSummarizer
+ *
+ * Calls the LLM, parses the response, and writes the result
+ * directly into DocumentContext. No local summary/keyTerms state —
+ * the context is the single source of truth.
+ *
+ * Returns:
+ *  - summarizing  boolean — true while the request is in-flight
+ *  - error        string | null
+ *  - summarize(text) → Promise<result | null>
+ */
 export function useSummarizer() {
-  const [summary,         setSummary]         = useState("");
-  const [summaryVariants, setSummaryVariants] = useState(EMPTY_VARIANTS);
-  const [keyTerms,        setKeyTerms]        = useState({ nodes: [], edges: [] });
-  const [summarizing,     setSummarizing]     = useState(false);
-  const [error,           setError]           = useState(null);
+  const {
+    setSummary,
+    setSummaryVariants,
+    setKeyTerms,
+  } = useDocument();
+
+  const [summarizing, setSummarizing] = useState(false);
+  const [error,       setError]       = useState(null);
 
   const summarize = useCallback(async (text) => {
     if (!text?.trim()) return null;
 
     setSummarizing(true);
     setError(null);
+
+    // Clear stale context state before the new request
     setSummary("");
     setSummaryVariants(EMPTY_VARIANTS);
     setKeyTerms({ nodes: [], edges: [] });
@@ -52,14 +70,15 @@ export function useSummarizer() {
 
       const result = parseFullResponse(raw);
 
+      // Write directly to context — single source of truth
       setSummaryVariants(result.variants);
       setSummary(result.variants.concise);
       setKeyTerms(result.keyTerms);
 
       return {
-        summary: result.variants.concise,
+        summary:         result.variants.concise,
         summaryVariants: result.variants,
-        keyTerms: result.keyTerms,
+        keyTerms:        result.keyTerms,
       };
     } catch (err) {
       setError(err.message ?? "An error occurred during summarization.");
@@ -67,39 +86,66 @@ export function useSummarizer() {
     } finally {
       setSummarizing(false);
     }
-  }, []);
+  }, [setSummary, setSummaryVariants, setKeyTerms]);
 
-  return { summary, summaryVariants, keyTerms, summarizing, error, summarize };
+  return { summarizing, error, summarize };
 }
 
 function parseFullResponse(raw) {
-  const content = typeof raw === "string" ? raw.trim() : "";
+  // Clean only what's necessary — BOM and leading/trailing whitespace.
+  // Do NOT use multiline regex flags on fence stripping — they corrupt JSON body.
+  const content = (typeof raw === "string" ? raw : "")
+    .replace(/^\uFEFF/, "")   // BOM
+    .trim();
+
+  // Strip code fences only if the string actually starts/ends with them
+  const stripped = content.startsWith("```")
+    ? content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim()
+    : content;
+
+  let parsed = null;
   try {
-    const parsed = JSON.parse(content);
+    const candidate = JSON.parse(stripped);
+
+    // Guard: double-encoded — concise field is itself a JSON string
+    if (candidate && typeof candidate.concise === "string") {
+      const innerTrim = candidate.concise.trim();
+      if (innerTrim.startsWith("{")) {
+        try { parsed = JSON.parse(innerTrim); }
+        catch { parsed = candidate; }
+      } else {
+        parsed = candidate;
+      }
+    } else {
+      parsed = candidate;
+    }
+  } catch {
+    // Not valid JSON — fall through to plain text fallback
+  }
+
+  if (parsed && typeof parsed === "object" && parsed.concise) {
     const variants = {
       concise:  sanitizeText(parsed.concise),
       detailed: sanitizeText(parsed.detailed),
       bullet:   sanitizeText(parsed.bullet),
     };
-
     const keyTerms = buildKeyTerms(parsed.nodes, parsed.edges);
     return { variants, keyTerms };
-
-  } catch {
-    const variants = {
-      concise:  content,
-      detailed: content,
-      bullet:   content
-        .split(/\n{2,}/)
-        .map((line) => line.trim())
-        .filter(Boolean)
-        .slice(0, 6)
-        .map((line) => `- ${line}`)
-        .join("\n"),
-    };
-
-    return { variants, keyTerms: { nodes: [], edges: [] } };
   }
+
+  // Plain text fallback
+  const variants = {
+    concise:  content,
+    detailed: content,
+    bullet:   content
+      .split(/\n{2,}/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .slice(0, 6)
+      .map((line) => `- ${line}`)
+      .join("\n"),
+  };
+  return { variants, keyTerms: { nodes: [], edges: [] } };
 }
 
 function buildKeyTerms(rawNodes, rawEdges) {

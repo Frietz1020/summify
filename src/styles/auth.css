@@ -441,3 +441,73 @@
   cursor: not-allowed;
   opacity: 0.55;
 }
+/* ── Verify Email Page ───────────────────────────────────────── */
+.verify-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 0 8px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.verify-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--surface-alt, #f0ece6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.verify-icon--success {
+  background: #e6f4ea;
+  color: #2e7d32;
+}
+
+.verify-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-secondary, #666);
+  line-height: 1.5;
+  max-width: 300px;
+}
+
+.verify-hint {
+  font-size: 0.78rem;
+  color: var(--text-secondary, #888);
+  opacity: 0.7;
+}
+
+.verify-success-msg {
+  font-size: 0.85rem;
+  color: #2e7d32;
+  background: #e6f4ea;
+  padding: 8px 14px;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.verify-error-msg {
+  font-size: 0.85rem;
+  color: #c62828;
+  background: #fdecea;
+  padding: 8px 14px;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.verify-back-link {
+  background: none;
+  border: none;
+  color: var(--text-secondary, #888);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 4px;
+  text-decoration: underline;
+  margin-top: 4px;
+}

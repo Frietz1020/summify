@@ -12,6 +12,7 @@ import { useAuthContext } from "../context/AuthContext";
 import { useFileParser } from "../hooks/useFileParser";
 import { useSummarizer } from "../hooks/useSummarizer";
 import { saveHistory } from "../services/firestore";
+import { countWords } from "../utils/text";
 
 export default function OriginalPage() {
   const fileInputRef = useRef(null);
@@ -25,9 +26,6 @@ export default function OriginalPage() {
     extractedText,
     setExtractedText,
     setPastedText,
-    setSummary,
-    setSummaryVariants,
-    setKeyTerms,
     setActiveTab,
   } = useDocument();
 
@@ -76,15 +74,13 @@ export default function OriginalPage() {
     const result = await summarize(extractedText);
     if (!result) return;
 
-    setSummary(result.summary);
-    setSummaryVariants(result.summaryVariants);
-    setKeyTerms(result.keyTerms);
+    // Context is already updated by useSummarizer — just set the tab and save
     setActiveTab("summarized");
 
     // Persist to Firestore (fire-and-forget — don't block navigation)
     if (currentUser) {
       saveHistory(currentUser.uid, {
-        fileName:       uploadedFile?.name ?? null,
+        fileName:        uploadedFile?.name ?? null,
         extractedText,
         summaryVariants: result.summaryVariants,
         keyTerms:        result.keyTerms,
@@ -143,6 +139,9 @@ export default function OriginalPage() {
               <ClipboardIcon />
               <span>Paste Text</span>
             </button>
+            <p style={{ margin: 0, fontSize: "0.72rem", opacity: 0.5, textAlign: "center", width: "100%" }}>
+              PDF, DOCX, TXT · 5 MB max
+            </p>
           </div>
         )}
 
@@ -159,8 +158,4 @@ export default function OriginalPage() {
       </div>
     </MobileShell>
   );
-}
-
-function countWords(text) {
-  return text.trim() ? text.trim().split(/\s+/).length : 0;
 }

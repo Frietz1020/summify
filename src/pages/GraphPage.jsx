@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import MobileShell from "../components/layout/MobileShell";
 import { useDocument } from "../context/DocumentContext";
 
@@ -90,7 +90,11 @@ export default function GraphPage() {
     ? summaryVariants.concise.split(/[.!?]/)[0].trim().slice(0, 24) || "Key"
     : "Key";
 
-  const graph = buildGraphLayout(keyTerms, centerLabel, dims.width, dims.height);
+  const graph = useMemo(
+    () => buildGraphLayout(keyTerms, centerLabel, dims.width, dims.height),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [keyTerms, dims.width, dims.height]
+  );
   const { setPositions, getPos } = useDragPositions(graph.nodes);
 
   // Drag handler — attached via useEffect so we can use { passive: false }

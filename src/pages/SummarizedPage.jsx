@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import MobileShell, { FileTextIcon, SummaryFooter } from "../components/layout/MobileShell";
 import { useDocument } from "../context/DocumentContext";
+import { countWords, toBulletItems } from "../utils/text";
 
 const modes = [
   { key: "concise", label: "Concise" },
@@ -87,23 +88,12 @@ export default function SummarizedPage() {
 
         {hasSummary && mode === "bullet" && (
           <ul className="summary-list">
-            {toBulletItems(activeSummary).map((item) => (
-              <li key={item}>{item}</li>
+            {toBulletItems(activeSummary).map((item, i) => (
+              <li key={i}>{item}</li>
             ))}
           </ul>
         )}
       </div>
     </MobileShell>
   );
-}
-
-function countWords(text) {
-  return text?.trim() ? text.trim().split(/\s+/).length : 0;
-}
-
-function toBulletItems(text) {
-  return text
-    .split("\n")
-    .map((line) => line.replace(/^\s*[-*]\s+/, "").replace(/^\s*\d+[.)]\s+/, "").trim())
-    .filter(Boolean);
 }

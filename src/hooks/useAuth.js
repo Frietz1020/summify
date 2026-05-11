@@ -5,6 +5,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithPopup,
   sendPasswordResetEmail,
+  sendEmailVerification,
+  reload,
   updateProfile,
 } from "firebase/auth";
 import { auth, googleProvider } from "../services/firebase";
@@ -56,12 +58,33 @@ export function useAuth() {
         fields.password
       );
       await updateProfile(credential.user, { displayName: fields.username.trim() });
-      navigate("/app/home");
+      await sendEmailVerification(credential.user);
+      navigate("/verify-email");
     } catch (err) {
       setAuthError(friendlyError(err.code));
     } finally {
       setLoading(false);
     }
+  }
+
+  /* ── Resend verification email ───────────────────────── */
+  async function handleResendVerification() {
+    const user = auth.currentUser;
+    if (!user) return { success: false, error: "No user session found." };
+    try {
+      await sendEmailVerification(user);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: friendlyError(err.code) };
+    }
+  }
+
+  /* ── Poll for email verified ─────────────────────────── */
+  async function checkEmailVerified() {
+    const user = auth.currentUser;
+    if (!user) return false;
+    await reload(user);
+    return user.emailVerified;
   }
 
   /* ── Google OAuth ─────────────────────────────────────── */
@@ -106,6 +129,8 @@ export function useAuth() {
     handleSignUp,
     handleGoogle,
     handleForgotPassword,
+    handleResendVerification,
+    checkEmailVerified,
   };
 }
 

@@ -17,12 +17,12 @@ export function countWords(text) {
  */
 export function toBulletItems(text) {
   return text
-    .split("\n")
+    .split(/\n+/)                              // split on one or more newlines
     .map((line) =>
       line
-        .replace(/^\s*[-*]\s+/, "")
-        .replace(/^\s*\d+[.)]\s+/, "")
+        .replace(/^\s*[-*•]\s*/, "")          // strip leading bullet markers
+        .replace(/^\s*\d+[.):]\s*/, "")      // strip numbered list markers
         .trim()
     )
-    .filter(Boolean);
+    .filter(Boolean);                           // remove empty lines
 }

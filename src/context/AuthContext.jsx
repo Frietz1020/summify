@@ -6,14 +6,14 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
-  const [authLoading, setAuthLoading]  = useState(true); // true until Firebase resolves session
+  const [authLoading, setAuthLoading]  = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setAuthLoading(false);
     });
-    return unsubscribe; // cleanup listener on unmount
+    return unsubscribe;
   }, []);
 
   return (
