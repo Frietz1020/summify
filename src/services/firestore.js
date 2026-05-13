@@ -4,6 +4,8 @@ import {
   getDocs,
   deleteDoc,
   doc,
+  getDoc,
+  setDoc,
   query,
   orderBy,
   serverTimestamp,
@@ -64,4 +66,30 @@ export async function getHistory(uid) {
 export async function deleteHistory(uid, docId) {
   await ensureAuth();
   await deleteDoc(doc(db, "users", uid, "history", docId));
+}
+
+/* ── Avatar ──────────────────────────────────────────────────────
+   Stored at: users/{uid}/profile/avatar  (single document)
+   Firebase Auth's photoURL only accepts http/https URLs, so we
+   store the compressed data URL in Firestore instead.
+──────────────────────────────────────────────────────────────── */
+
+/**
+ * Fetch the user's custom avatar data URL.
+ * Returns null if no custom avatar is set.
+ */
+export async function getAvatar(uid) {
+  await ensureAuth();
+  const snap = await getDoc(doc(db, "users", uid, "profile", "avatar"));
+  return snap.exists() ? (snap.data().dataURL ?? null) : null;
+}
+
+/**
+ * Persist (or clear) a custom avatar data URL for the user.
+ * Pass null to remove the custom avatar.
+ */
+export async function saveAvatar(uid, dataURL) {
+  await ensureAuth();
+  const ref = doc(db, "users", uid, "profile", "avatar");
+  await setDoc(ref, { dataURL: dataURL ?? null, updatedAt: serverTimestamp() });
 }

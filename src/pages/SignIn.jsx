@@ -104,9 +104,29 @@ export default function SignIn() {
   const {
     fields, errors, authError, loading,
     handleChange, handleSignIn, handleGoogle, handleForgotPassword,
+    handlePasswordlessRequest,
   } = useAuth();
 
-  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotOpen,   setForgotOpen]   = useState(false);
+  const [magicSending, setMagicSending] = useState(false);
+  const [magicSent,    setMagicSent]    = useState(false);
+  const [magicError,   setMagicError]   = useState("");
+
+  async function handleMagicSend() {
+    if (!fields.email?.trim()) {
+      setMagicError("Enter your email first, then click Sign in with Link.");
+      return;
+    }
+    setMagicSending(true);
+    setMagicError("");
+    const result = await handlePasswordlessRequest(fields.email);
+    setMagicSending(false);
+    if (result.success) {
+      setMagicSent(true);
+    } else {
+      setMagicError(result.error);
+    }
+  }
 
   return (
     <div className="auth-screen">
@@ -119,7 +139,6 @@ export default function SignIn() {
 
       <h1 className="auth-title">Sign In</h1>
 
-      {/* Top-level auth error */}
       {authError && (
         <div className="auth-error-banner">
           <ErrorIcon />
@@ -127,50 +146,83 @@ export default function SignIn() {
         </div>
       )}
 
-      <form onSubmit={handleSignIn} noValidate className="auth-form">
+      {magicError && (
+        <div className="auth-error-banner">
+          <ErrorIcon />
+          {magicError}
+        </div>
+      )}
 
-        <InputField
-          id="email"
-          type="email"
-          placeholder="Email"
-          value={fields.email || ""}
-          onChange={handleChange}
-          error={errors.email}
-          icon={<EmailIcon />}
-        />
-
-        <InputField
-          id="password"
-          type="password"
-          placeholder="Password"
-          value={fields.password || ""}
-          onChange={handleChange}
-          error={errors.password}
-          icon={<KeyIcon />}
-        />
-
-        <div className="auth-forgot">
+      {magicSent ? (
+        <div className="verify-card">
+          <div className="verify-icon verify-icon--success">
+            <CheckIcon />
+          </div>
+          <p className="verify-subtitle">
+            Check your inbox at <strong>{fields.email}</strong> and click the sign-in link.
+          </p>
           <button
             type="button"
-            className="terms-link"
-            onClick={() => setForgotOpen(true)}
+            className="verify-back-link"
+            onClick={() => setMagicSent(false)}
           >
-            Forgot Password?
+            Back to Sign In
           </button>
         </div>
+      ) : (
+        <form onSubmit={handleSignIn} noValidate className="auth-form">
 
-        <button type="submit" className="btn-auth-primary" disabled={loading}>
-          {loading ? <span className="btn-spinner" /> : "Sign In"}
-        </button>
+          <InputField
+            id="email"
+            type="email"
+            placeholder="Email"
+            value={fields.email || ""}
+            onChange={handleChange}
+            error={errors.email}
+            icon={<EmailIcon />}
+          />
 
-        <span className="auth-or">or</span>
+          <InputField
+            id="password"
+            type="password"
+            placeholder="Password"
+            value={fields.password || ""}
+            onChange={handleChange}
+            error={errors.password}
+            icon={<KeyIcon />}
+          />
 
-        <button type="button" className="btn-google" onClick={handleGoogle} disabled={loading}>
-          <GoogleLogo size={24} />
-          <span>Continue with Google</span>
-        </button>
+          <div className="auth-forgot">
+            <button
+              type="button"
+              className="terms-link"
+              onClick={() => setForgotOpen(true)}
+            >
+              Forgot Password?
+            </button>
+            <button
+              type="button"
+              className="terms-link"
+              onClick={handleMagicSend}
+              disabled={magicSending}
+            >
+              {magicSending ? "Sending…" : "Sign in with Link"}
+            </button>
+          </div>
 
-      </form>
+          <button type="submit" className="btn-auth-primary" disabled={loading}>
+            {loading ? <span className="btn-spinner" /> : "Sign In"}
+          </button>
+
+          <span className="auth-or">or</span>
+
+          <button type="button" className="btn-google" onClick={handleGoogle} disabled={loading}>
+            <GoogleLogo size={24} />
+            <span>Continue with Google</span>
+          </button>
+
+        </form>
+      )}
 
       <p className="auth-switch">
         Need an Account? <Link to="/sign-up">Sign Up</Link>

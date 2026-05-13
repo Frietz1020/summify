@@ -1,8 +1,23 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ── History ──────────────────────────────────────────────────
+    // Users can only read/write their own history entries.
     match /users/{uid}/history/{docId} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ── Profile (avatar, preferences) ───────────────────────────
+    // Users can only read/write their own profile sub-documents.
+    match /users/{uid}/profile/{docId} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ── Default deny ─────────────────────────────────────────────
+    // All other paths are denied unless explicitly allowed above.
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

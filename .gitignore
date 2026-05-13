@@ -1,6 +1,10 @@
 # Dependencies
 node_modules/
 
+# AI assistant data
+.gemini/
+
+
 # Build output
 dist/
 
@@ -12,6 +16,10 @@ dist/
 # Wrangler secrets (local dev)
 .wrangler/
 .dev.vars
+
+# Firebase service account key (contains private key — NEVER commit)
+*-firebase-adminsdk-*.json
+summify-ff9e1-firebase-adminsdk-fbsvc-*.json
 
 # OS
 .DS_Store

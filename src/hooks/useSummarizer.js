@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { callOpenRouter } from "../services/openrouter";
 import { useDocument } from "../context/DocumentContext";
 
-const EMPTY_VARIANTS = { concise: "", detailed: "", bullet: "" };
+const EMPTY_VARIANTS = { concise: "", detailed: "", bullet: "", terms: "" };
 
 /**
  * useSummarizer
@@ -43,22 +43,78 @@ export function useSummarizer() {
           {
             role: "system",
             content:
-              "You are a professional document summarizer and key term extractor. " +
-              "Return ONLY a single valid JSON object with this exact shape — no markdown fences, no backticks, no explanation:\n" +
+              "# Role: Senior Knowledge Analyst & Information Architect\n" +
+              "# Task: Multi-Format Content Distillation\n\n" +
+              "You are a Senior Knowledge Analyst specializing in information architecture. " +
+              "Transform the provided text into three distinct, high-utility summary formats " +
+              "designed for general audience comprehension.\n\n" +
+
+              "## OUTPUT CONTRACT\n" +
+              "Return ONLY a single valid JSON object — no markdown fences, no backticks, no explanation:\n" +
               "{\n" +
-              '  "concise": "<one short paragraph summary>",\n' +
-              '  "detailed": "<three paragraph summary separated by \\n\\n>",\n' +
-              '  "bullet": "<3 to 6 bullet lines each starting with - >",\n' +
-              '  "nodes": [{ "id": "<string>", "label": "<string>" }],\n' +
+              '  "concise": "<BLUF paragraph — plain text, bold critical takeaway with **asterisks**>",\n' +
+              '  "detailed": "<multi-paragraph abstract — narrative prose, subheadings if long>",\n' +
+              '  "bullet": "<scannable markdown list — parallel verbs, fragments>",\n' +
+              '  "terms": "<key terms: each entry on its own line as: **Term Name** — Definition. Relevance to document. Separate entries with \\n\\n>",\n' +
+              '  "nodes": [{ "id": "<slug>", "label": "<readable term>" }],\n' +
               '  "edges": [{ "source": "<node id>", "target": "<node id>", "label": "<relationship>" }]\n' +
-              "}\n" +
-              "Rules:\n" +
-              "- concise: one tight paragraph, under 80 words\n" +
-              "- detailed: exactly 3 paragraphs separated by \\n\\n\n" +
-              "- bullet: 3 to 6 lines, each starting with '- '\n" +
-              "- nodes: 6 to 12 key terms from the document\n" +
-              "- edges: meaningful relationships between nodes\n" +
-              "- Output raw JSON only. No other text.",
+              "}\n\n" +
+
+              "## I. SUMMARY ARCHITECTURES\n\n" +
+
+              "### 1. Concise Summary (The \"Elevator Pitch\")\n" +
+              "- Logic: Distillation. Filter out everything except the primary conclusion (BLUF).\n" +
+              "- Convention: Active verbs only. NEVER use introductory fluff such as " +
+              "\"This article explains,\" \"In this text,\" or \"The author discusses.\"\n" +
+              "- Layout: As brief as the content allows — one tight paragraph for simple topics, " +
+              "two to three sentences for dense material. Scale length to information density, not a word cap.\n" +
+              "- Format: Plain text. Bold the single most critical takeaway using **double asterisks**.\n\n" +
+
+              "### 2. Detailed Summary (The \"Comprehensive Abstract\")\n" +
+              "- Logic: Structural Mapping. Mirror the original flow: Introduction → Body → Conclusion.\n" +
+              "- Convention: Act as a proxy for the source — a reader must not need the original. " +
+              "Maintain the source voice and context; include secondary evidence and specific data points.\n" +
+              "- Layout: Scale paragraph count to source complexity. " +
+              "Simple or short documents: 2 paragraphs. Standard documents: 3 paragraphs. " +
+              "Dense, multi-topic, or long documents: 4 or more paragraphs as needed. " +
+              "Separate paragraphs with \\n\\n. Use smooth transitions between ideas. " +
+              "Add subheadings when the content spans clearly distinct sections.\n" +
+              "- Format: Narrative prose only. No bullet points.\n\n" +
+
+              "### 3. Bulleted Summary (The \"Scannable Guide\")\n" +
+              "- Logic: Categorization. Break information into discrete, non-linear chunks.\n" +
+              "- Convention: Strict parallelism — every bullet MUST start with the same part of speech " +
+              "(prefer action verbs: e.g. Identifies…, Reduces…, Enables…). Fragments over full sentences.\n" +
+              "- Layout: Scale bullet count generously to content length — " +
+              "Very short content (<300 words): 5-7 bullets. " +
+              "Short content (300-600 words): 7-10 bullets. " +
+              "Standard content (600-1500 words): 10-15 bullets. " +
+              "Long content (>1500 words): 15-22 bullets or more. " +
+              "Cover ALL key points — never truncate for brevity. " +
+              "Order by importance (most critical first). Each line starts with '- '. No trailing punctuation.\n" +
+              "- Format: Markdown list. Use numbered sequences ONLY for chronological processes.\n\n" +
+
+              "## II. EXECUTION RULES\n" +
+              "1. Audience: Write for the General Person. Define technical jargon inline. " +
+              "Prioritize clarity over academic tone.\n" +
+              "2. Tone: Professional yet accessible.\n" +
+              "3. Negative Constraints:\n" +
+              "   - DO NOT hallucinate details not present in the source.\n" +
+              "   - DO NOT provide meta-commentary about the text.\n" +
+              "   - DO NOT use passive voice in the Concise Summary.\n" +
+              "4. Done When: Output contains all three distinct sections, adheres to formatting rules " +
+              "(bolding, parallelism), and is free of introductory filler.\n\n" +
+
+              "## III. KEY TERMS\n" +
+              "- terms: Extract 10 to 20 key terms/concepts from the document. " +
+              "For each: **Term Name** — One-sentence definition in plain language. One sentence on its relevance or role in this document. " +
+              "Separate each entry with \\n\\n. Scale count with document complexity.\n\n" +
+
+              "## IV. GRAPH\n" +
+              "- nodes: Extract 12 to 20 key terms scaled to document complexity. Short/simple: 8-12 nodes. Standard: 12-16. Long/complex: 16-20. Include main concepts, sub-concepts, entities, and key processes. (id = lowercase-hyphen-slug, label = readable 1-3 word term)\n" +
+              "- edges: Generate 4-8 directional inter-node relationships (not just spoke connections) to enable nested hierarchical graph layout.\n" +
+
+              "Output raw JSON only. Absolutely no other text.",
           },
           {
             role: "user",
@@ -105,7 +161,7 @@ function parseFullResponse(raw) {
 
   let parsed = null;
   try {
-    const candidate = JSON.parse(stripped);
+    const candidate = JSON.parse(repairJSON(stripped));
 
     // Guard: double-encoded — concise field is itself a JSON string
     if (candidate && typeof candidate.concise === "string") {
@@ -128,6 +184,7 @@ function parseFullResponse(raw) {
       concise:  sanitizeText(parsed.concise),
       detailed: sanitizeText(parsed.detailed),
       bullet:   sanitizeText(parsed.bullet),
+      terms:    sanitizeText(parsed.terms),
     };
     const keyTerms = buildKeyTerms(parsed.nodes, parsed.edges);
     return { variants, keyTerms };
@@ -146,6 +203,54 @@ function parseFullResponse(raw) {
       .join("\n"),
   };
   return { variants, keyTerms: { nodes: [], edges: [] } };
+}
+
+/**
+ * repairJSON — fixes literal newlines inside JSON string values.
+ *
+ * LLMs frequently emit multi-line strings like:
+ *   "bullet": "- Point one\n- Point two\n- Point three"
+ * where the \n characters are REAL newlines, not the two-char escape sequence.
+ * Real newlines inside JSON strings are invalid per the spec, causing JSON.parse
+ * to throw even though the overall structure is otherwise correct.
+ *
+ * This walks the string character-by-character, tracking whether we are inside
+ * a JSON string, and replaces bare \n / \r only within string values.
+ */
+function repairJSON(str) {
+  let inString = false;
+  let escaped  = false;
+  let out      = "";
+
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i];
+
+    if (escaped) {
+      out     += ch;
+      escaped  = false;
+      continue;
+    }
+
+    if (ch === "\\" && inString) {
+      out     += ch;
+      escaped  = true;
+      continue;
+    }
+
+    if (ch === "\"") {
+      out      += ch;
+      inString  = !inString;
+      continue;
+    }
+
+    if (inString && ch === "\n") { out += "\\n";  continue; }
+    if (inString && ch === "\r") { out += "\\r";  continue; }
+    if (inString && ch === "\t") { out += "\\t";  continue; }
+
+    out += ch;
+  }
+
+  return out;
 }
 
 function buildKeyTerms(rawNodes, rawEdges) {

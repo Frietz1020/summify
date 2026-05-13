@@ -3,7 +3,11 @@
 @tailwind utilities;
 
 /* ============================================================
-   OpenDyslexic — loaded from CDN (no npm package needed)
+   Google Font — Plus Jakarta Sans (loaded in index.html)
+   ============================================================ */
+
+/* ============================================================
+   OpenDyslexic — loaded from CDN
    ============================================================ */
 @font-face {
   font-family: "OpenDyslexic";
@@ -22,67 +26,107 @@
 
 /* ============================================================
    CSS Design Tokens — Light mode (default)
+   Style:   Glassmorphism
+   Palette: Teal · Lavender · Mauve
    ============================================================ */
 :root {
-  /* Surfaces */
-  --bg-page:        #F7F8FC;
-  --bg-card:        #FFFFFF;
-  --bg-input:       #F7F8FC;
-  --bg-nav:         #8D7C66;
+  /* ── Palette seeds ── */
+  --clr-teal:      #6c9a9e;
+  --clr-lavender:  #a8a4c3;
+  --clr-mauve:     #9e8bb2;
 
-  /* Text */
-  --text-primary:   #06070D;
-  --text-muted:     #B8C5B1;
-  --text-on-nav:    #FFFFFF;
-  --text-on-primary:#FFFFFF;
+  /* ── Background mesh gradient (behind everything) ── */
+  --bg-mesh: linear-gradient(
+    135deg,
+    #dff0f2 0%,
+    #e8e6f3 35%,
+    #f0ecf6 65%,
+    #d8eaec 100%
+  );
 
-  /* Brand */
-  --color-primary:  #8D7C66;
-  --color-accent:   #8BA88C;
-  --color-secondary:#B8C5B1;
+  /* ── Glassmorphism surfaces ── */
+  --bg-page:        transparent;          /* see html/body for gradient */
+  --bg-glass:       rgba(255,255,255,0.45);
+  --bg-glass-strong:rgba(255,255,255,0.62);
+  --bg-glass-nav:   rgba(255,255,255,0.55);
+  --bg-card:        rgba(255,255,255,0.50);
+  --bg-input:       rgba(255,255,255,0.35);
 
-  /* Borders / separators */
-  --border-default: #E0E0E0;
-  --border-input:   #8BA88C;
+  --glass-blur:     14px;
+  --glass-blur-nav: 20px;
+  --glass-saturate: 160%;
 
-  /* Shadows */
-  --shadow-card:    4px 4px 2px rgba(0, 0, 0, 0.25);
+  /* ── Text ── */
+  --text-primary:   #1e1b2e;   /* deep indigo-black — 9:1+ on glass  */
+  --text-secondary: #3d3557;   /* medium indigo                       */
+  --text-muted:     #7c7a99;   /* muted lavender-grey                 */
+  --text-on-accent: #ffffff;
 
-  /* Font */
-  --font-body:      'Poppins', sans-serif;
+  /* ── Brand ── */
+  --color-primary:  #6c9a9e;   /* teal                                */
+  --color-accent:   #9e8bb2;   /* mauve — primary CTA                 */
+  --color-secondary:#a8a4c3;   /* lavender                            */
 
-  /* Misc */
-  --overlay-bg:     rgba(0, 0, 0, 0.40);
+  /* ── Borders (glass hairlines) ── */
+  --border-default: rgba(255,255,255,0.55);
+  --border-input:   rgba(158,139,178,0.40);
+  --border-glass:   rgba(255,255,255,0.60);
+
+  /* ── Shadows / glows ── */
+  --shadow-card:    0 8px 32px rgba(108,154,158,0.18), 0 2px 8px rgba(158,139,178,0.12);
+  --shadow-nav:     0 4px 24px rgba(108,154,158,0.16);
+  --glow-accent:    0 0 20px rgba(158,139,178,0.35);
+
+  /* ── Misc ── */
+  --overlay-bg:     rgba(30,27,46,0.50);
+  --radius-card:    18px;
+  --radius-btn:     12px;
+  --radius-input:   14px;
+
+  /* ── Font ── */
+  --font-body:      'Plus Jakarta Sans', sans-serif;
 }
 
 /* ============================================================
-   Dark mode overrides — toggled via class on <html>
+   Dark mode — deep indigo/navy glassmorphism
    ============================================================ */
 html.dark {
-  --bg-page:        #1A1A1F;
-  --bg-card:        #25252C;
-  --bg-input:       #2E2E38;
-  --bg-nav:         #2C2820;
+  --bg-mesh: linear-gradient(
+    135deg,
+    #0f0c1a 0%,
+    #151128 35%,
+    #1a1530 65%,
+    #0d1520 100%
+  );
 
-  --text-primary:   #EDEEF2;
-  --text-muted:     #7A8A78;
-  --text-on-nav:    #EDEEF2;
-  --text-on-primary:#EDEEF2;
+  --bg-glass:       rgba(255,255,255,0.06);
+  --bg-glass-strong:rgba(255,255,255,0.10);
+  --bg-glass-nav:   rgba(255,255,255,0.07);
+  --bg-card:        rgba(255,255,255,0.07);
+  --bg-input:       rgba(255,255,255,0.08);
 
-  --color-primary:  #A89880;
-  --color-accent:   #6F8F70;
-  --color-secondary:#4A5A49;
+  --text-primary:   #eeeaf8;
+  --text-secondary: #b8b0d8;
+  --text-muted:     #6e6a8a;
+  --text-on-accent: #ffffff;
 
-  --border-default: #3A3A44;
-  --border-input:   #6F8F70;
+  --color-primary:  #7ab4b8;
+  --color-accent:   #b59fcc;
+  --color-secondary:#bcb8d8;
 
-  --shadow-card:    4px 4px 2px rgba(0, 0, 0, 0.55);
+  --border-default: rgba(255,255,255,0.10);
+  --border-input:   rgba(181,159,204,0.30);
+  --border-glass:   rgba(255,255,255,0.12);
 
-  --overlay-bg:     rgba(0, 0, 0, 0.65);
+  --shadow-card:    0 8px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.30);
+  --shadow-nav:     0 4px 24px rgba(0,0,0,0.40);
+  --glow-accent:    0 0 24px rgba(181,159,204,0.30);
+
+  --overlay-bg:     rgba(0,0,0,0.65);
 }
 
 /* ============================================================
-   Dyslexic font override — toggled via class on <html>
+   Dyslexic font override
    ============================================================ */
 html.dyslexic,
 html.dyslexic * {
@@ -93,49 +137,169 @@ html.dyslexic * {
 }
 
 /* ============================================================
-   Global theme application
+   Font size — controlled by ThemeContext (--font-size-base)
+   Default is 16px; steps: 14 / 16 / 19 / 22px
+   ============================================================ */
+:root {
+  --font-size-base: 16px;
+}
+
+html body,
+html #root {
+  font-size: var(--font-size-base);
+}
+
+/* ============================================================
+   High contrast mode
+   Strips all glass/blur effects and maximises text contrast.
+   ============================================================ */
+html.high-contrast {
+  --bg-glass:        rgba(255,255,255,0.95);
+  --bg-glass-strong: #ffffff;
+  --bg-glass-nav:    #ffffff;
+  --bg-card:         #ffffff;
+  --bg-input:        #ffffff;
+  --glass-blur:      0px;
+  --glass-saturate:  100%;
+  --bg-mesh:         #f0f0f0;
+  --text-primary:    #000000;
+  --text-secondary:  #111111;
+  --text-muted:      #333333;
+  --border-glass:    #000000;
+  --border-default:  #000000;
+  --border-input:    #000000;
+  --shadow-card:     none;
+  --shadow-nav:      none;
+  --glow-accent:     none;
+}
+
+html.dark.high-contrast {
+  --bg-glass:        rgba(0,0,0,0.92);
+  --bg-glass-strong: #000000;
+  --bg-glass-nav:    #000000;
+  --bg-card:         #000000;
+  --bg-input:        #111111;
+  --bg-mesh:         #000000;
+  --text-primary:    #ffffff;
+  --text-secondary:  #eeeeee;
+  --text-muted:      #cccccc;
+  --border-glass:    #ffffff;
+  --border-default:  #ffffff;
+  --border-input:    #ffffff;
+}
+
+html.high-contrast body::before,
+html.high-contrast body::after {
+  display: none;
+}
+
+/* ============================================================
+   Reduce motion
+   Disables all animations and transitions for users with
+   vestibular disorders or motion sensitivity.
+   ============================================================ */
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation-duration:        0.001ms !important;
+  animation-iteration-count: 1       !important;
+  transition-duration:       0.001ms !important;
+  scroll-behavior:           auto    !important;
+}
+
+html.reduce-motion body::before,
+html.reduce-motion body::after {
+  animation: none !important;
+}
+
+/* ============================================================
+   Global — apply background mesh to html/body
    ============================================================ */
 html {
-  background-color: var(--bg-page);
-  color:            var(--text-primary);
-  transition: background-color 0.25s ease, color 0.25s ease;
+  background:    var(--bg-mesh);
+  background-attachment: fixed;
+  color:         var(--text-primary);
+  min-height:    100%;
+  transition:    background 0.35s ease, color 0.25s ease;
 }
 
 body,
 #root {
-  width: 100%;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
-  background-color: var(--bg-page);
-  color:            var(--text-primary);
-  font-family:      var(--font-body);
-  -webkit-font-smoothing: antialiased;
+  background:    transparent;
+  color:         var(--text-primary);
+  font-family:   var(--font-body);
+  margin:        0;
+  min-height:    100vh;
+  padding:       0;
+  width:         100%;
+  -webkit-font-smoothing:  antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* ============================================================
+   Ambient blob decorations (pure CSS, behind everything)
+   ============================================================ */
+body::before,
+body::after {
+  border-radius:  50%;
+  content:        "";
+  pointer-events: none;
+  position:       fixed;
+  z-index:        -1;
+  filter:         blur(80px);
+  opacity:        0.40;
+}
+
+body::before {
+  background: radial-gradient(circle, #6c9a9e 0%, transparent 70%);
+  height:     420px;
+  right:      -80px;
+  top:        -80px;
+  width:      420px;
+  animation:  blobDrift 14s ease-in-out infinite alternate;
+}
+
+body::after {
+  background: radial-gradient(circle, #9e8bb2 0%, transparent 70%);
+  bottom:     -100px;
+  height:     380px;
+  left:       -60px;
+  width:      380px;
+  animation:  blobDrift 18s ease-in-out infinite alternate-reverse;
+}
+
+/* ============================================================
+   Utility glass mixin helpers
+   ============================================================ */
+.glass {
+  backdrop-filter:         blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  background:              var(--bg-glass);
+  border:                  1px solid var(--border-glass);
+}
+
+.glass-strong {
+  backdrop-filter:         blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background:              var(--bg-glass-strong);
+  border:                  1px solid var(--border-glass);
 }
 
 /* ============================================================
    Component-level theme hooks
-   All components that need dark/dyslexic awareness use these.
    ============================================================ */
+.theme-bg-page   { background: var(--bg-mesh) fixed !important; }
+.theme-bg-card   { background: var(--bg-card)       !important; }
+.theme-bg-input  { background: var(--bg-input)      !important; }
+.theme-bg-nav    { background: var(--bg-glass-nav)  !important; }
 
-/* Page backgrounds */
-.theme-bg-page  { background-color: var(--bg-page)  !important; }
-.theme-bg-card  { background-color: var(--bg-card)  !important; }
-.theme-bg-input { background-color: var(--bg-input) !important; }
-.theme-bg-nav   { background-color: var(--bg-nav)   !important; }
+.theme-text-primary { color: var(--text-primary)  !important; }
+.theme-text-muted   { color: var(--text-muted)    !important; }
+.theme-text-on-nav  { color: var(--text-primary)  !important; }
 
-/* Text */
-.theme-text-primary { color: var(--text-primary)   !important; }
-.theme-text-muted   { color: var(--text-muted)     !important; }
-.theme-text-on-nav  { color: var(--text-on-nav)    !important; }
+.theme-border       { border-color: var(--border-default) !important; }
+.theme-border-input { border-color: var(--border-input)   !important; }
 
-/* Borders */
-.theme-border         { border-color: var(--border-default) !important; }
-.theme-border-input   { border-color: var(--border-input)   !important; }
-
-/* Brand colours */
 .theme-primary  { color: var(--color-primary) !important; }
 .theme-accent   { color: var(--color-accent)  !important; }
 
@@ -145,6 +309,17 @@ body,
 @keyframes fadeSlideUp {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes blobDrift {
+  0%   { transform: translate(0px,   0px)   scale(1.00); }
+  50%  { transform: translate(30px,  20px)  scale(1.08); }
+  100% { transform: translate(-20px, 30px)  scale(0.95); }
+}
+
+@keyframes shimmer {
+  from { background-position: -200% center; }
+  to   { background-position:  200% center; }
 }
 
 /* ============================================================

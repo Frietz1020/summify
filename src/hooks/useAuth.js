@@ -6,6 +6,9 @@ import {
   signInWithPopup,
   sendPasswordResetEmail,
   sendEmailVerification,
+  sendSignInLinkToEmail,
+  isSignInWithEmailLink,
+  signInWithEmailLink,
   reload,
   updateProfile,
 } from "firebase/auth";
@@ -119,6 +122,40 @@ export function useAuth() {
     }
   }
 
+  /* ── Passwordless: Send sign-in link ────────────────── */
+  async function handlePasswordlessRequest(email) {
+    if (!email || !isValidEmail(email)) {
+      return { success: false, error: "Enter a valid email address." };
+    }
+    const actionCodeSettings = {
+      url:             window.location.origin + "/finish-signin",
+      handleCodeInApp: true,
+    };
+    try {
+      await sendSignInLinkToEmail(auth, email.trim(), actionCodeSettings);
+      // Store email so we can retrieve it on the finish page
+      localStorage.setItem("summify_signin_email", email.trim());
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: friendlyError(err.code) };
+    }
+  }
+
+  /* ── Passwordless: Complete sign-in from link ────────── */
+  async function handlePasswordlessComplete(email) {
+    if (!isSignInWithEmailLink(auth, window.location.href)) {
+      return { success: false, error: "Invalid or expired sign-in link." };
+    }
+    try {
+      await signInWithEmailLink(auth, email.trim(), window.location.href);
+      localStorage.removeItem("summify_signin_email");
+      navigate("/app/home");
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: friendlyError(err.code) };
+    }
+  }
+
   return {
     fields,
     errors,
@@ -131,15 +168,16 @@ export function useAuth() {
     handleForgotPassword,
     handleResendVerification,
     checkEmailVerified,
+    handlePasswordlessRequest,
+    handlePasswordlessComplete,
   };
 }
 
 /* ── Validators ───────────────────────────────────────────── */
-function validateSignIn({ email, password }) {
+function validateSignIn({ email }) {
   const errs = {};
-  if (!email)                    errs.email    = "Email is required.";
-  else if (!isValidEmail(email)) errs.email    = "Enter a valid email address.";
-  if (!password)                 errs.password = "Password is required.";
+  if (!email)                    errs.email = "Email is required.";
+  else if (!isValidEmail(email)) errs.email = "Enter a valid email address.";
   return errs;
 }
 

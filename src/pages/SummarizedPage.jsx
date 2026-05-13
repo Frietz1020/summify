@@ -2,63 +2,147 @@ import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import MobileShell, { FileTextIcon, SummaryFooter } from "../components/layout/MobileShell";
 import { useDocument } from "../context/DocumentContext";
+import { useTTS } from "../hooks/useTTS";
 import { countWords, toBulletItems } from "../utils/text";
 
 const modes = [
-  { key: "concise", label: "Concise" },
+  { key: "concise",  label: "Concise"  },
   { key: "detailed", label: "Detailed" },
-  { key: "bullet", label: "Bullet" },
+  { key: "bullet",   label: "Bullet"   },
 ];
 
 export default function SummarizedPage() {
   const navigate = useNavigate();
-  const {
-    mode,
-    setMode,
-    summary,
-    setSummary,
-    summaryVariants,
-    setActiveTab,
-  } = useDocument();
+  const { mode, setMode, summaryVariants, setActiveTab } = useDocument();
+  const { speak, stop, speaking, supported } = useTTS();
 
-  const activeSummary = summaryVariants?.[mode] || summary;
-  const hasSummary = Boolean(activeSummary?.trim());
-  const wordCount = useMemo(() => countWords(activeSummary), [activeSummary]);
+  const activeSummary = summaryVariants?.[mode] ?? "";
+  const hasSummary    = Boolean((summaryVariants?.concise ?? "").trim());
+  const hasTerms      = Boolean((summaryVariants?.terms   ?? "").trim());
+  const wordCount     = useMemo(() => countWords(activeSummary), [activeSummary]);
 
-  useEffect(() => {
-    setActiveTab("summarized");
-  }, [setActiveTab]);
+  useEffect(() => { setActiveTab("summarized"); }, [setActiveTab]);
+  useEffect(() => () => stop(), [stop]);
 
-  useEffect(() => {
-    if (summaryVariants?.[mode]) setSummary(summaryVariants[mode]);
-  }, [mode, setSummary, summaryVariants]);
+  function exportPDF() {
+    const c = summaryVariants?.concise  ?? "";
+    const d = summaryVariants?.detailed ?? "";
+    const b = summaryVariants?.bullet   ?? "";
+    const t = summaryVariants?.terms    ?? "";
+    if (!c && !d && !b) return;
 
-  function exportSummary() {
-    if (!activeSummary?.trim()) return;
+    const bulletItems = toBulletItems(b);
+    const bulletHTML  = bulletItems.map((item) => `<li>${item}</li>`).join("\n");
+    const detailHTML  = d.replace(/\\n/g, "\n").split(/\n\n+/).map((p) => `<p>${p.trim()}</p>`).join("\n");
+    const conciseHTML = c.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    const date        = new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
 
-    const blob = new Blob([activeSummary], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `summify-${mode}-summary.txt`;
-    link.click();
-    URL.revokeObjectURL(url);
+    // Parse terms for PDF
+    const termEntries = t
+      ? t.replace(/\\n/g, "\n").split(/\n\n+/).map((entry) => {
+          const m = entry.trim().match(/^\*\*(.+?)\*\*\s*[—\-]\s*(.+)$/s);
+          return m ? `<div class="term-card"><span class="term-name">${m[1]}</span><p>${m[2]}</p></div>` : `<p>${entry}</p>`;
+        }).join("\n")
+      : "";
+
+    const totalPages = t ? 4 : 3;
+    const html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<title>Summify Export</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#1a1a1a;background:#fff}
+  .page{padding:56px 64px;min-height:100vh;display:flex;flex-direction:column;page-break-after:always}
+  .page:last-child{page-break-after:auto}
+  .badge{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#2d8b8f;margin-bottom:10px}
+  .title{font-size:30px;font-weight:700;color:#1a1a1a;line-height:1.2;margin-bottom:6px}
+  .meta{font-size:12px;color:#999;margin-bottom:36px;padding-bottom:20px;border-bottom:2px solid #e8f0f0}
+  .content{font-size:16px;line-height:1.75;color:#2c2c2c;flex:1}
+  .content p{margin-bottom:16px}
+  strong{font-weight:700;color:#1a1a1a}
+  ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+  li{display:flex;gap:12px;align-items:flex-start;padding:12px 16px;background:#f3f9f9;border-left:4px solid #2d8b8f;border-radius:0 8px 8px 0;font-size:15px;line-height:1.55}
+  li::before{content:"•";color:#2d8b8f;font-size:18px;font-weight:700;flex-shrink:0;line-height:1.3}
+  .term-card{margin-bottom:16px;padding:14px 18px;background:#f7f3ff;border-left:4px solid #9d5d9f;border-radius:0 8px 8px 0}
+  .term-name{font-weight:700;font-size:15px;color:#6b3f8f;display:block;margin-bottom:6px}
+  .term-card p{font-size:14px;line-height:1.6;color:#444;margin:0}
+  .footer{font-size:11px;color:#bbb;text-align:right;margin-top:auto;padding-top:24px}
+  @media print{@page{margin:0;size:A4}.page{padding:40px 48px}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body>
+<div class="page">
+  <div class="badge">Summify · Concise Summary</div>
+  <div class="title">The Elevator Pitch</div>
+  <div class="meta">Exported ${date}</div>
+  <div class="content"><p>${conciseHTML}</p></div>
+  <div class="footer">Page 1 of ${totalPages} · Generated by Summify</div>
+</div>
+<div class="page">
+  <div class="badge">Summify · Detailed Summary</div>
+  <div class="title">The Comprehensive Abstract</div>
+  <div class="meta">Exported ${date}</div>
+  <div class="content">${detailHTML}</div>
+  <div class="footer">Page 2 of ${totalPages} · Generated by Summify</div>
+</div>
+<div class="page">
+  <div class="badge">Summify · Bullet Summary</div>
+  <div class="title">The Scannable Guide</div>
+  <div class="meta">Exported ${date}</div>
+  <div class="content"><ul>${bulletHTML}</ul></div>
+  <div class="footer">Page 3 of ${totalPages} · Generated by Summify</div>
+</div>
+${t ? `<div class="page">
+  <div class="badge">Summify · Key Terms</div>
+  <div class="title">Glossary & Key Concepts</div>
+  <div class="meta">Exported ${date}</div>
+  <div class="content">${termEntries}</div>
+  <div class="footer">Page 4 of ${totalPages} · Generated by Summify</div>
+</div>` : ""}
+</body></html>`;
+
+    const win = window.open("", "_blank");
+    if (!win) return;
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 600);
   }
+
+  function handleTTS() {
+    speaking ? stop() : speak(activeSummary);
+  }
+
+  // Parse terms string into card objects
+  const termCards = useMemo(() => {
+    const raw = summaryVariants?.terms ?? "";
+    if (!raw.trim()) return [];
+    return raw
+      .replace(/\\n/g, "\n")
+      .split(/\n\n+/)
+      .map((entry) => {
+        const match = entry.trim().match(/^\*\*(.+?)\*\*\s*[—\-]\s*(.+)$/s);
+        if (match) return { term: match[1].trim(), body: match[2].trim() };
+        if (entry.trim()) return { term: "", body: entry.trim() };
+        return null;
+      })
+      .filter(Boolean);
+  }, [summaryVariants?.terms]);
+
+  const isTermsMode = mode === "terms";
 
   return (
     <MobileShell
       topTabs
       footer={
         <SummaryFooter
-          wordCount={wordCount}
-          actionLabel="Export"
+        wordCount={wordCount}
+          actionLabel="Export PDF"
           actionIcon={<FileTextIcon />}
-          disabled={!hasSummary}
-          onAction={exportSummary}
+          disabled={!summaryVariants?.concise && !summaryVariants?.detailed && !summaryVariants?.bullet}
+          onAction={exportPDF}
         />
       }
     >
       <div className="summary-page">
+        {/* Mode tabs */}
         <div className="summary-mode-tabs" aria-label="Summary modes">
           {modes.map((item) => (
             <button
@@ -72,28 +156,120 @@ export default function SummarizedPage() {
           ))}
         </div>
 
+        {/* TTS button — only for text modes */}
+        {supported && activeSummary.trim() && (
+          <button
+            type="button"
+            onClick={handleTTS}
+            aria-label={speaking ? "Stop reading" : "Read aloud"}
+            title={speaking ? "Stop reading" : "Read aloud"}
+            className="summary-action"
+            style={{
+              alignSelf: "flex-start",
+              marginBottom: 10,
+              background: speaking ? "linear-gradient(135deg, var(--clr-teal), var(--clr-mauve))" : undefined,
+              color: speaking ? "#fff" : undefined,
+              boxShadow: speaking ? "var(--glow-accent)" : undefined,
+              minWidth: "auto",
+            }}
+          >
+            {speaking ? <StopIcon /> : <SpeakerIcon />}
+            {speaking ? "Stop" : "Read aloud"}
+          </button>
+        )}
+
+        {/* Empty state */}
         {!hasSummary && (
           <p className="summary-hint">
             No summary yet. Go to{" "}
-            <button type="button" className="text-current underline" onClick={() => navigate("/app/original")}>
+            <button
+              type="button"
+              style={{ background: "none", border: "none", cursor: "pointer", textDecoration: "underline", color: "inherit", fontFamily: "inherit", fontSize: "inherit", padding: 0 }}
+              onClick={() => navigate("/app/original")}
+            >
               Original
             </button>{" "}
             and press Summarize.
           </p>
         )}
 
-        {hasSummary && mode !== "bullet" && (
-          <p className="summary-text">{activeSummary}</p>
+        {/* Concise / Detailed */}
+        {hasSummary && !isTermsMode && mode !== "bullet" && (
+          <p className="summary-text"><BoldText text={activeSummary} /></p>
         )}
 
-        {hasSummary && mode === "bullet" && (
-          <ul className="summary-list">
-            {toBulletItems(activeSummary).map((item, i) => (
-              <li key={i}>{item}</li>
-            ))}
-          </ul>
-        )}
+        {/* Bullet — list then key terms below */}
+        {hasSummary && mode === "bullet" && (() => {
+          const items = toBulletItems(activeSummary);
+          const bulletEl = items.length > 0
+            ? (
+              <ul className="summary-list">
+                {items.map((item, i) => <li key={i}>{item}</li>)}
+              </ul>
+            )
+            : (() => {
+                const raw = activeSummary.replace(/\\n/g, "\n").split(/\n+/).map(l => l.trim()).filter(Boolean);
+                return (
+                  <ul className="summary-list">
+                    {raw.length > 0
+                      ? raw.map((item, i) => <li key={i}>{item}</li>)
+                      : <li>{activeSummary}</li>
+                    }
+                  </ul>
+                );
+              })();
+
+          return (
+            <>
+              {bulletEl}
+              {hasTerms && termCards.length > 0 && (
+                <>
+                  <p className="profile-label" style={{ marginTop: 20, marginBottom: 8 }}>Key Terms</p>
+                  <div className="terms-list">
+                    {termCards.map((card, i) => (
+                      <div key={i} className="term-card">
+                        {card.term && <span className="term-card__name">{card.term}</span>}
+                        <p className="term-card__body">{card.body}</p>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          );
+        })()}
+
+        {/* Key Terms standalone mode — removed; concept now lives in Bullet */}
       </div>
     </MobileShell>
+  );
+}
+
+function BoldText({ text }) {
+  if (!text?.includes("**")) return text;
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) =>
+    part.startsWith("**") && part.endsWith("**")
+      ? <strong key={i}>{part.slice(2, -2)}</strong>
+      : part
+  );
+}
+
+function SpeakerIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+    </svg>
+  );
+}
+
+function StopIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <rect x="4" y="4" width="16" height="16" rx="2"/>
+    </svg>
   );
 }

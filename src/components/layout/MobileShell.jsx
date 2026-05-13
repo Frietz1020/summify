@@ -2,26 +2,65 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useDocument } from "../../context/DocumentContext";
 
 const navItems = [
-  { label: "Home", route: "/app/home", match: ["/app/home"], icon: HomeIcon },
+  { label: "Home",    route: "/app/home",     match: ["/app/home"],    icon: HomeIcon    },
   { label: "Summary", route: "/app/original", match: ["/app/original", "/app/summarized", "/app/graph"], icon: SummaryIcon },
-  { label: "History", route: "/app/history", match: ["/app/history"], icon: HistoryIcon },
-  { label: "Profile", route: "/app/profile", match: ["/app/profile", "/app/settings"], icon: ProfileIcon },
+  { label: "History", route: "/app/history",  match: ["/app/history"], icon: HistoryIcon },
+  { label: "Profile", route: "/app/profile",  match: ["/app/profile", "/app/profile/edit", "/app/settings"], icon: ProfileIcon },
 ];
 
 const summaryTabs = [
-  { key: "original", label: "Original", route: "/app/original" },
+  { key: "original",   label: "Original",   route: "/app/original"   },
   { key: "summarized", label: "Summarized", route: "/app/summarized" },
-  { key: "graph", label: "Graph", route: "/app/graph" },
+  { key: "graph",      label: "Graph",      route: "/app/graph"      },
 ];
 
 export default function MobileShell({ children, topTabs = false, footer }) {
   return (
-    <main className="mobile-shell">
-      {topTabs && <SummaryTabs />}
-      <section className="mobile-content">{children}</section>
-      {footer}
-      <BottomNavigation />
-    </main>
+    <div className="app-shell">
+      {/* Desktop: persistent left sidebar */}
+      <DesktopSidebar />
+
+      {/* Main area */}
+      <main className="app-main">
+        {topTabs && <SummaryTabs />}
+        <section className="mobile-content">{children}</section>
+        {footer}
+        {/* Mobile-only bottom nav */}
+        <BottomNavigation />
+      </main>
+    </div>
+  );
+}
+
+/* ── Desktop sidebar ──────────────────────────────────────────── */
+function DesktopSidebar() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  return (
+    <aside className="desktop-sidebar" aria-label="Main navigation">
+      <div className="desktop-sidebar__brand">
+        <span className="desktop-sidebar__brand-mark">S</span>
+        <span className="desktop-sidebar__brand-name">Summify</span>
+      </div>
+      <nav className="desktop-sidebar__nav">
+        {navItems.map((item) => {
+          const Icon   = item.icon;
+          const active = item.match.some((p) => location.pathname.startsWith(p));
+          return (
+            <button
+              key={item.label}
+              type="button"
+              className={`desktop-sidebar__item${active ? " is-active" : ""}`}
+              onClick={() => navigate(item.route)}
+              aria-current={active ? "page" : undefined}
+            >
+              <Icon />
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+    </aside>
   );
 }
 
@@ -53,13 +92,11 @@ export function SummaryTabs() {
 function BottomNavigation() {
   const location = useLocation();
   const navigate = useNavigate();
-
   return (
     <nav className="bottom-nav" aria-label="Primary">
       {navItems.map((item) => {
-        const Icon = item.icon;
+        const Icon   = item.icon;
         const active = item.match.some((path) => location.pathname.startsWith(path));
-
         return (
           <button
             key={item.label}
@@ -96,6 +133,7 @@ export function SummaryFooter({ wordCount, actionLabel, actionIcon, disabled, lo
   );
 }
 
+/* ── Icons ──────────────────────────────────────────────────── */
 export function HomeIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -104,7 +142,6 @@ export function HomeIcon() {
     </svg>
   );
 }
-
 export function SummaryIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -113,7 +150,6 @@ export function SummaryIcon() {
     </svg>
   );
 }
-
 export function HistoryIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -122,7 +158,6 @@ export function HistoryIcon() {
     </svg>
   );
 }
-
 export function ProfileIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -131,7 +166,6 @@ export function ProfileIcon() {
     </svg>
   );
 }
-
 export function ArrowRightIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -139,7 +173,6 @@ export function ArrowRightIcon() {
     </svg>
   );
 }
-
 export function UploadIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -148,7 +181,6 @@ export function UploadIcon() {
     </svg>
   );
 }
-
 export function ClipboardIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -157,7 +189,6 @@ export function ClipboardIcon() {
     </svg>
   );
 }
-
 export function SparklesIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -166,7 +197,6 @@ export function SparklesIcon() {
     </svg>
   );
 }
-
 export function FileTextIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -175,7 +205,6 @@ export function FileTextIcon() {
     </svg>
   );
 }
-
 function ListIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
