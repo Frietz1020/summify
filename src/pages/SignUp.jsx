@@ -92,9 +92,7 @@ export default function SignUp() {
     <div className="auth-screen auth-screen--signup">
 
       <div className="auth-logo-wrap">
-        <div className="auth-logo-box">
-          <span className="auth-logo-letter">S</span>
-        </div>
+        <img src="/pwa-icon-192.png" alt="Summify" className="auth-logo-img" />
       </div>
 
       <h1 className="auth-title auth-title--accent">Sign Up</h1>

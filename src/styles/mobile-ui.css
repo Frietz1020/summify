@@ -76,6 +76,13 @@
     width: 36px;
   }
 
+  .desktop-sidebar__brand-img {
+    border-radius: 8px;
+    height: 36px;
+    object-fit: contain;
+    width: 36px;
+  }
+
   .desktop-sidebar__brand-name {
     color: var(--text-primary);
     font-family: var(--font-display);

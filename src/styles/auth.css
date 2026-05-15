@@ -41,6 +41,13 @@
   width: 80px;
 }
 
+.auth-logo-img {
+  border-radius: 18px;
+  height: 80px;
+  object-fit: contain;
+  width: 80px;
+}
+
 .auth-logo-letter {
   background: linear-gradient(135deg, var(--clr-teal), var(--clr-mauve));
   -webkit-background-clip: text;

@@ -39,7 +39,7 @@ function DesktopSidebar() {
   return (
     <aside className="desktop-sidebar" aria-label="Main navigation">
       <div className="desktop-sidebar__brand">
-        <span className="desktop-sidebar__brand-mark">S</span>
+        <img src="/pwa-icon-192.png" alt="Summify" className="desktop-sidebar__brand-img" />
         <span className="desktop-sidebar__brand-name">Summify</span>
       </div>
       <nav className="desktop-sidebar__nav">
