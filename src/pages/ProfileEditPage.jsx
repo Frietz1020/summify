@@ -53,6 +53,12 @@ export default function ProfileEditPage() {
     (p) => p.providerId === "google.com"
   );
 
+  // Google accounts have no editable password and no custom avatar —
+  // redirect them back to profile rather than showing a partially usable form.
+  useEffect(() => {
+    if (isGoogleAccount) navigate("/app/profile", { replace: true });
+  }, [isGoogleAccount, navigate]);
+
   // ── Form fields ─────────────────────────────────────────────
   const [displayName,     setDisplayName]     = useState(currentUser?.displayName || "");
   const [currentPassword, setCurrentPassword] = useState("");

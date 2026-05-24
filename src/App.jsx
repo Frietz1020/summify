@@ -95,7 +95,7 @@ function AppRoutes() {
         <Route path="/sign-in"      element={<PublicRoute><SignIn /></PublicRoute>} />
         <Route path="/sign-up"      element={<PublicRoute><SignUp /></PublicRoute>} />
         <Route path="/verify-email" element={<VerifyEmailRoute><VerifyEmail /></VerifyEmailRoute>} />
-        <Route path="/finish-signin" element={<FinishSignIn />} />
+        <Route path="/finish-signin" element={<PublicRoute><FinishSignIn /></PublicRoute>} />
 
         <Route path="/app/home"        element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
         <Route path="/app/original"    element={<ProtectedRoute><OriginalPage /></ProtectedRoute>} />

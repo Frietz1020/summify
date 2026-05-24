@@ -10,7 +10,7 @@
 
 - **Multi-format ingestion** — paste text, upload PDF or DOCX
 - **AI summaries** — short, medium, and long modes via Groq (Llama 3.3 70B)
-- **Knowledge graph** — interactive key-term graph with ReactFlow
+- **Knowledge graph** — interactive key-term graph with custom SVG force simulation
 - **History** — all summaries saved to Firestore and searchable
 - **Profile** — editable display name and avatar (compressed client-side)
 - **Glassmorphism UI** — teal-lavender-mauve design system, dark mode, dyslexic font mode
@@ -161,7 +161,7 @@ firebase deploy
 | Database | Firebase Firestore |
 | PDF parsing | pdfjs-dist |
 | DOCX parsing | Mammoth |
-| Graph | ReactFlow |
+| Graph | Custom SVG (force simulation, drag, pan/zoom) |
 | PWA | vite-plugin-pwa |
 
 ---

@@ -18,7 +18,6 @@ export default function SummarizedPage() {
 
   const activeSummary = summaryVariants?.[mode] ?? "";
   const hasSummary    = Boolean((summaryVariants?.concise ?? "").trim());
-  const hasTerms      = Boolean((summaryVariants?.terms   ?? "").trim());
   const wordCount     = useMemo(() => countWords(activeSummary), [activeSummary]);
 
   useEffect(() => { setActiveTab("summarized"); }, [setActiveTab]);
@@ -110,24 +109,6 @@ ${t ? `<div class="page">
     speaking ? stop() : speak(activeSummary);
   }
 
-  // Parse terms string into card objects
-  const termCards = useMemo(() => {
-    const raw = summaryVariants?.terms ?? "";
-    if (!raw.trim()) return [];
-    return raw
-      .replace(/\\n/g, "\n")
-      .split(/\n\n+/)
-      .map((entry) => {
-        const match = entry.trim().match(/^\*\*(.+?)\*\*\s*[—\-]\s*(.+)$/s);
-        if (match) return { term: match[1].trim(), body: match[2].trim() };
-        if (entry.trim()) return { term: "", body: entry.trim() };
-        return null;
-      })
-      .filter(Boolean);
-  }, [summaryVariants?.terms]);
-
-  const isTermsMode = mode === "terms";
-
   return (
     <MobileShell
       topTabs
@@ -149,7 +130,7 @@ ${t ? `<div class="page">
               key={item.key}
               type="button"
               className={`summary-mode-tabs__button${mode === item.key ? " is-active" : ""}`}
-              onClick={() => setMode(item.key)}
+              onClick={() => { if (mode !== item.key) { stop(); setMode(item.key); } }}
             >
               {item.label}
             </button>
@@ -194,11 +175,11 @@ ${t ? `<div class="page">
         )}
 
         {/* Concise / Detailed */}
-        {hasSummary && !isTermsMode && mode !== "bullet" && (
+        {hasSummary && mode !== "bullet" && (
           <p className="summary-text"><BoldText text={activeSummary} /></p>
         )}
 
-        {/* Bullet — list then key terms below */}
+        {/* Bullet */}
         {hasSummary && mode === "bullet" && (() => {
           const items = toBulletItems(activeSummary);
           const bulletEl = items.length > 0
@@ -219,27 +200,8 @@ ${t ? `<div class="page">
                 );
               })();
 
-          return (
-            <>
-              {bulletEl}
-              {hasTerms && termCards.length > 0 && (
-                <>
-                  <p className="profile-label" style={{ marginTop: 20, marginBottom: 8 }}>Key Terms</p>
-                  <div className="terms-list">
-                    {termCards.map((card, i) => (
-                      <div key={i} className="term-card">
-                        {card.term && <span className="term-card__name">{card.term}</span>}
-                        <p className="term-card__body">{card.body}</p>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </>
-          );
+          return bulletEl;
         })()}
-
-        {/* Key Terms standalone mode — removed; concept now lives in Bullet */}
       </div>
     </MobileShell>
   );

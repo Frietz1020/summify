@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useState } from "react";
 
 /**
  * DocumentContext
@@ -10,13 +10,13 @@ import { createContext, useContext, useState } from "react";
  *  - pastedText    string
  *  - extractedText string   (plain text from parsed file or paste)
  *  - summary       string   (active AI-generated summary result)
- *  - summaryVariants object (summary output by mode)
+ *  - summaryVariants object (summary output by mode + terms)
  *  - keyTerms      object   (graph nodes and edges)
  *  - activeTab     "original" | "summarized" | "graph"
  *  - sidebarOpen   boolean
  */
 
-const DocumentContext = createContext(null);
+export const DocumentContext = createContext(null);
 
 export function DocumentProvider({ children }) {
   const [mode, setMode]               = useState("concise");
@@ -28,6 +28,7 @@ export function DocumentProvider({ children }) {
     concise: "",
     detailed: "",
     bullet: "",
+    terms: "",
   });
   const [keyTerms, setKeyTerms]       = useState({ nodes: [], edges: [] });
   const [activeTab, setActiveTab]     = useState("original");
@@ -38,12 +39,14 @@ export function DocumentProvider({ children }) {
   }
 
   function resetDocument() {
+    setMode("concise");
     setUploadedFile(null);
     setPastedText("");
     setExtractedText("");
     setSummary("");
-    setSummaryVariants({ concise: "", detailed: "", bullet: "" });
+    setSummaryVariants({ concise: "", detailed: "", bullet: "", terms: "" });
     setKeyTerms({ nodes: [], edges: [] });
+    setActiveTab("original");
   }
 
   return (
@@ -66,9 +69,6 @@ export function DocumentProvider({ children }) {
   );
 }
 
-/** Convenience hook */
-export function useDocument() {
-  const ctx = useContext(DocumentContext);
-  if (!ctx) throw new Error("useDocument must be used inside <DocumentProvider>");
-  return ctx;
-}
+// Re-export the hook so all existing import paths stay unchanged:
+//   import { useDocument } from "../context/DocumentContext"  ← still works
+export { useDocument } from "../hooks/useDocument";

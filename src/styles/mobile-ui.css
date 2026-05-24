@@ -17,6 +17,8 @@
   height: 100dvh;
   width: 100%;
   overflow: hidden;
+  /* Push content above the fixed bottom nav (62px height + 14px gap = 76px) */
+  padding-bottom: 76px;
 }
 
 /* Desktop sidebar — hidden on mobile */
@@ -145,6 +147,7 @@
     height: auto;
     min-height: 100vh;
     overflow: visible;
+    padding-bottom: 0;
     width: 0; /* flex child — grow to fill */
   }
 
@@ -402,7 +405,7 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 0 20px 80px;
+  padding: 0 20px 100px;
 }
 
 .summary-tabs {
@@ -445,13 +448,17 @@
   background: var(--bg-glass-nav);
   border: 1px solid var(--border-glass);
   border-radius: 20px;
+  bottom: 14px;
   box-shadow: var(--shadow-nav);
   display: grid;
   flex-shrink: 0;
   grid-template-columns: repeat(4, 1fr);
-  height: 52px;
-  margin: 8px 20px 14px;
+  height: 62px;
+  left: 20px;
   padding: 0 8px;
+  position: fixed;
+  right: 20px;
+  z-index: 100;
 }
 
 .bottom-nav__item {
@@ -463,7 +470,7 @@
   display: flex;
   flex-direction: column;
   font-family: var(--font-body);
-  font-size: 8px;
+  font-size: 13px;
   gap: 1px;
   line-height: 1.1;
   min-width: 0;
@@ -478,12 +485,12 @@
 .summary-action svg,
 .uploaded-file svg {
   fill: none;
-  height: 16px;
+  height: 21px;
   stroke: currentColor;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.8;
-  width: 16px;
+  width: 21px;
   flex-shrink: 0;
 }
 
